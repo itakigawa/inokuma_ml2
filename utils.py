@@ -346,7 +346,6 @@ def train_step(
     optimizer.zero_grad()
     for i, (data, target) in enumerate(tqdm(train_loader)):
         data, target = data.to(device), target.to(device)
-        print('TEST',data.shape)
         output = model(data)
         loss = criterion(output, target)
         train_loss += loss.item()
