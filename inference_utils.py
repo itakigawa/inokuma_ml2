@@ -8,6 +8,7 @@ import torch.nn as nn
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from timm.models.layers import SelectAdaptivePool2d, LayerNorm2d
+from tqdm import tqdm
 
 class TestImageDataset(Dataset):
     def __init__(self, img_paths, transform=None, auto_brightness=True):
@@ -39,7 +40,7 @@ def tta_predict(model, device, dataset, transform, num_tta, softmax):
     y_pred = []
     model.eval()
     with torch.no_grad():
-        for img in dataset:
+        for img in tqdm(dataset):
             images = torch.stack(
                 [transform(image=img)["image"] for i in range(num_tta)]
             )
