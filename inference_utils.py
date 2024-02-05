@@ -73,37 +73,43 @@ def get_da_filters(cfg):
     da_filters.append(ToTensorV2()),
     return A.Compose(da_filters)
 
-class CustomModel(nn.Module):
-    def __init__(self, timm_model, gpool, head):
-        super(CustomModel, self).__init__()
-        self.backbone = timm_model
-        self.gpool = gpool
-        for p in self.backbone.parameters():
-            p.requires_grad = False
-        self.forward_features = self.backbone.forward_features
-        self.head = head
-
-    def forward(self, x):
-        f = self.forward_features(x)
-        if hasattr(self.backbone, "global_pool"):
-            if self.gpool:
-                f = self.gpool(f)
-            else:
-                f = self.backbone.global_pool(f)
-        y = self.head(f)
-        return y
-
 def create_net(
-    model_name, head="bestfitting", concat_pool=False, outdim=1, softmax=True
+    model_name,
+    head="basic_mlp",
+    concat_pool=False,
+    outdim=1,
+    softmax=True,
+    in_chans=3,
+    pretrained=True
 ):
-    model_timm = timm.create_model(model_name, pretrained=True)
+    model_timm = timm.create_model(model_name, pretrained=pretrained, in_chans=in_chans)
     num_ftrs = model_timm.num_features
     if concat_pool:
-        neck = SelectAdaptivePool2d(output_size=1, pool_type="catavgmax", flatten=True)
+        neck = SelectAdaptivePool2d(output_size=1, pool_type="catavgmax")
         num_ftrs *= 2
     else:
-        neck = SelectAdaptivePool2d(output_size=1, pool_type="avg", flatten=True)
-    if head == "bestfitting":
+        neck = SelectAdaptivePool2d(output_size=1, pool_type="avg")
+    if head == 'basic':
+        layers = [
+            #nn.LayerNorm(num_ftrs),
+            LayerNorm2d(num_ftrs),
+            nn.Flatten(1),
+            nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, outdim),
+        ]
+    elif head == "basic_mlp":
+        layers = [
+            #nn.LayerNorm(num_ftrs),
+            LayerNorm2d(num_ftrs),
+            nn.Flatten(1),
+            nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, 2*num_ftrs),
+            nn.LayerNorm(2*num_ftrs),
+            nn.SiLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(2*num_ftrs, outdim),
+        ]
+    elif head == "bestfitting":
         layers = [
             nn.BatchNorm1d(num_ftrs),
             nn.Dropout(p=0.5),
@@ -134,3 +140,5 @@ def get_model_from_file(cfg, fname):
     )
     model.load_state_dict(torch.load(fname))
     return model
+
+
