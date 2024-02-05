@@ -73,6 +73,27 @@ def get_da_filters(cfg):
     da_filters.append(ToTensorV2()),
     return A.Compose(da_filters)
 
+class CustomModel(nn.Module):
+    def __init__(self, timm_model, gpool, head):
+        super(CustomModel, self).__init__()
+        self.backbone = timm_model
+        self.gpool = gpool
+        for p in self.backbone.parameters():
+            p.requires_grad = False
+        self.forward_features = self.backbone.forward_features
+        self.head = head
+
+    def forward(self, x):
+        f = self.forward_features(x)
+        #if hasattr(self.backbone, "global_pool"):
+        #    if self.gpool:
+        #        f = self.gpool(f)
+        #    else:
+        #        f = self.backbone.global_pool(f)
+        f = self.gpool(f)
+        y = self.head(f)
+        return y
+
 def create_net(
     model_name,
     head="basic_mlp",
