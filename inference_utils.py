@@ -4,10 +4,10 @@ import torch
 import cv2
 from skimage import io
 from torch.utils.data import Dataset
-from timm.models.layers import SelectAdaptivePool2d
 import torch.nn as nn
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+from timm.models.layers import SelectAdaptivePool2d, LayerNorm2d
 
 class TestImageDataset(Dataset):
     def __init__(self, img_paths, transform=None, auto_brightness=True):
