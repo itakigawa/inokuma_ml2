@@ -446,7 +446,7 @@ def run(cfg):
     logging.info(f"num valid images: {len(data.valid_imgs)}")
     logging.info(f"num test images: {len(data.test_imgs)}")
     logging.info(f"working dir: {os.getcwd()}")
-    logging.info(f"device: {torch.cuda.get_device_name(device)}")
+    #logging.info(f"device: {torch.cuda.get_device_name(device)}")
 
     # IMAGE OUTPUT
     if cfg["image_out"] is False:
@@ -519,8 +519,12 @@ def prepare_device():
         device = torch.device("cuda")
         cuda_id = torch.cuda.current_device()
         logging.info(f"cuda device: {torch.cuda.get_device_name(cuda_id)}")
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+        logging.info(f"mps device")
     else:
         device = "cpu"
+    print('device', device)
     return device
 
 
@@ -541,8 +545,8 @@ def setup_loss(loss):
 
 def learn_setup(mode, model, num, cfg):
     if mode == "warmup":
-        optimizer = optim.Adam(
-            model.parameters(), lr=cfg["lr_init_warmup"], weight_decay=0
+        optimizer = optim.AdamW(
+            model.parameters(), lr=cfg["lr_init_warmup"], weight_decay=1e-8
         )
         scheduler = optim.lr_scheduler.OneCycleLR(
             optimizer,
@@ -551,8 +555,8 @@ def learn_setup(mode, model, num, cfg):
             epochs=cfg["warmup_epochs"],
         )
     elif mode == "uptrain":
-        optimizer = optim.Adam(
-            model.parameters(), lr=cfg["lr_init_uptrain"], weight_decay=0
+        optimizer = optim.AdamW(
+            model.parameters(), lr=cfg["lr_init_uptrain"], weight_decay=1e-8
         )
         scheduler = optim.lr_scheduler.OneCycleLR(
             optimizer,
