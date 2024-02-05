@@ -233,6 +233,19 @@ def create_net(
             nn.Dropout(p=0.5),
             nn.Linear(2*num_ftrs, outdim),
         ]
+    elif head == "basic_mlp_softplus":
+        layers = [
+            #nn.LayerNorm(num_ftrs),
+            LayerNorm2d(num_ftrs),
+            nn.Flatten(1),
+            nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, 2*num_ftrs),
+            nn.LayerNorm(2*num_ftrs),
+            nn.SiLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(2*num_ftrs, outdim),
+            nn.Softplus()
+        ]
     elif head == "bestfitting":
         layers = [
             nn.BatchNorm1d(num_ftrs),
