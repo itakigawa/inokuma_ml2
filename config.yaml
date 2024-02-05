@@ -8,13 +8,13 @@ uptrain_epochs: 100
 lr_init_warmup: 1e-5
 lr_max_warmup: 1e-3
 lr_init_uptrain: 1e-7
-lr_max_uptrain: 5e-4
+lr_max_uptrain: 1e-4
 normalize: False
 num_tta: 50
 warmup_out: "warmup.model"
 uptrain_out: "uptrain.model"
 model_name: "seresnext50_32x4d"
-head: "bestfitting"
+head: "basic_mlp"
 concat_pool: False
 loss: "SoftTargetCrossEntropy"
 image_out: True

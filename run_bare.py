@@ -519,7 +519,7 @@ def prepare_device():
         device = torch.device("cuda")
         cuda_id = torch.cuda.current_device()
         logging.info(f"cuda device: {torch.cuda.get_device_name(cuda_id)}")
-    if torch.backends.mps.is_available():
+    elif torch.backends.mps.is_available():
         device = torch.device("mps")
         logging.info(f"mps device")
     else:

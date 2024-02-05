@@ -199,7 +199,7 @@ class CustomModel(nn.Module):
 
 def create_net(
     model_name,
-    head="bestfitting",
+    head="basic_mlp",
     concat_pool=False,
     outdim=1,
     softmax=True,
